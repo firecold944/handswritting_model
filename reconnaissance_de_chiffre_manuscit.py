@@ -4,27 +4,29 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-
+# Charger le modèle CNN
 try:
-    model = tf.keras.models.load_model("mnist_model_improved.h5")
+    model = tf.keras.models.load_model("mnist_cnn_model.h5")
 except Exception as e:
     print(f"Erreur lors du chargement du modèle : {e}")
     exit()
 
-
+# Dimensions du canvas
 WIDTH, HEIGHT = 280, 280  
 window = tk.Tk()
 window.title("Reconnaissance de chiffre manuscrit")
 window.geometry("400x500")
 
+# Canvas pour dessiner
 canvas = tk.Canvas(window, width=WIDTH, height=HEIGHT, bg="white")
 canvas.pack(pady=10)
 
-# 3. Variables pour dessiner
+# Image pour dessin et variables
 image1 = Image.new("L", (WIDTH, HEIGHT), color=255)  
 draw = ImageDraw.Draw(image1)
 last_prediction = None  
 
+# Fonction pour dessiner
 def paint(event):
     x, y = event.x, event.y
     r = 12  
@@ -33,7 +35,7 @@ def paint(event):
 
 canvas.bind("<B1-Motion>", paint)
 
-
+# Fonction pour centrer l'image
 def center_image(img):
     img_array = np.array(img)
     non_empty_rows = np.any(img_array < 255, axis=1)
@@ -50,35 +52,35 @@ def center_image(img):
         return Image.fromarray(new_img)
     return img
 
-# 5. Fonction pour prédire
+# Fonction pour prédire le chiffre
 def predict(event=None):
     global last_prediction
     try:
-        # Prétraitement de l'image
+        # Prétraitement pour CNN
         img = image1.resize((28, 28))
         img = center_image(img)
-        img = ImageOps.invert(img)  # Inverser (chiffre blanc, fond noir)
+        img = ImageOps.invert(img)  # Chiffre blanc sur fond noir
         img_array = np.array(img) / 255.0  # Normaliser
-        img_array = img_array.flatten().reshape(1, 784)  # Pour MLP
-        
+        img_array = img_array.reshape(1, 28, 28, 1)  # Adapté CNN
+
         # Prédiction
         pred = model.predict(img_array, verbose=0)
         digit = np.argmax(pred)
         probabilities = pred[0]
         last_prediction = (img_array, digit, probabilities)
-        
+
         # Afficher le résultat
         result_label.config(text=f"Chiffre prédit : {digit}\nProbabilité : {probabilities[digit]:.2%}")
-        
-        # Afficher l'image prétraitée et les probabilités
+
+        # Visualiser l'image et probabilités
         plt.figure(figsize=(8, 3))
-        
+
         # Image prétraitée
         plt.subplot(1, 2, 1)
-        plt.imshow(img_array.reshape(28, 28), cmap='gray')
+        plt.imshow(img_array[0].reshape(28, 28), cmap='gray')
         plt.title(f"Image envoyée au modèle\nPrédit : {digit}")
         plt.axis('off')
-        
+
         # Graphique des probabilités
         plt.subplot(1, 2, 2)
         plt.bar(range(10), probabilities, color='blue')
@@ -88,20 +90,20 @@ def predict(event=None):
         plt.xticks(range(10))
         plt.tight_layout()
         plt.show()
-        
+
     except Exception as e:
         result_label.config(text=f"Erreur de prédiction : {e}")
 
-# 6. Prédiction automatique au relâchement du clic
+# Lancer prédiction au relâchement du clic
 canvas.bind("<ButtonRelease-1>", predict)
 
-
+# Fonction pour effacer le canvas
 def clear_canvas():
     canvas.delete("all")
     draw.rectangle([0, 0, WIDTH, HEIGHT], fill=255)
     result_label.config(text="Chiffre prédit : ")
 
-
+# Instructions et boutons
 instructions = tk.Label(window, text="Dessinez un chiffre (relâchez pour prédire)")
 instructions.pack()
 
@@ -114,4 +116,4 @@ btn_clear.pack(pady=5)
 result_label = tk.Label(window, text="Chiffre prédit : ", font=("Arial", 12))
 result_label.pack(pady=10)
 
-window.mainloop() 
+window.mainloop()
