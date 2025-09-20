@@ -3,7 +3,7 @@
 
 Imagine writing a digit by hand, and in an instant, an intelligent neural network recognizes it! 🚀
 
-This Python application lets you draw digits on a simple, intuitive Tkinter canvas and sends them to a TensorFlow/Keras and aslo pytorch model trained on MNIST for instant predictions. 💡🤖
+This Python application lets you draw digits on a simple, intuitive Tkinter canvas and sends them to a TensorFlow/Keras and also pytorch model trained on MNIST for instant predictions. 💡🤖
 
 🎯 Features
 
